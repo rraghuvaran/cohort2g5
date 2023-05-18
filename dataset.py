@@ -53,6 +53,7 @@ class Unimib2016FoodDataset(torch.utils.data.Dataset):
         # convert everything into a torch.Tensor
         boxes = torch.as_tensor(boxes, dtype=torch.float32)
         labels = torch.as_tensor(labels, dtype=torch.int64)
+        areas = torch.as_tensor(areas, dtype=torch.int64)
 
         image_id = torch.tensor([idx])
         # suppose all instances are not crowd
