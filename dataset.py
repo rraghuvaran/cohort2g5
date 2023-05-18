@@ -31,6 +31,7 @@ class Unimib2016FoodDataset(torch.utils.data.Dataset):
 
         boxes = []
         labels = []
+        areas = []
         image_base_name = image_name.rsplit('.', maxsplit=1)[0]
         image_item_df = self.annotations_df.loc[self.annotations_df['image_name'] == image_base_name]
         num_objs = image_item_df.shape[1] 
@@ -44,16 +45,16 @@ class Unimib2016FoodDataset(torch.utils.data.Dataset):
             xmax = np.max(res[0])
             ymin = np.min(res[1])
             ymax = np.max(res[1])
+            area = (xmax - xmin) * (ymax - ymin)
             boxes.append([xmin, ymin, xmax, ymax])
             labels.append(row.item_label_id)
+            areas.append(area)
 
         # convert everything into a torch.Tensor
         boxes = torch.as_tensor(boxes, dtype=torch.float32)
-        # there is only one class
-        labels = torch.as_tensor((num_objs,), dtype=torch.int64)
+        labels = torch.as_tensor(labels, dtype=torch.int64)
 
         image_id = torch.tensor([idx])
-        area = (boxes[:, 3] - boxes[:, 1]) * (boxes[:, 2] - boxes[:, 0])
         # suppose all instances are not crowd
         iscrowd = torch.zeros((num_objs,), dtype=torch.int64)
 
