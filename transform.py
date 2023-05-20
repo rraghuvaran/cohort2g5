@@ -26,6 +26,20 @@ class Compose:
         return image, target
 
 
+class Resize:
+    def __init__(self, size, max_size=None):
+        self.size = size
+        if max_size is None:
+            max_size = size
+        self.max_size = max_size
+
+    def __call__(self, image, target):
+        image = F.resize(image, self.size)
+        #target = F.resize(target, self.size, interpolation=T.InterpolationMode.NEAREST)
+        return image, target
+
+
+
 class RandomResize:
     def __init__(self, min_size, max_size=None):
         self.min_size = min_size
@@ -70,14 +84,16 @@ class CenterCrop:
 
     def __call__(self, image, target):
         image = F.center_crop(image, self.size)
-        target = F.center_crop(target, self.size)
+        #target = F.center_crop(target, self.size)
         return image, target
 
 
-class PILToTensor:
+class ToTensor:
     def __call__(self, image, target):
-        image = F.pil_to_tensor(image)
-        target = torch.as_tensor(np.array(target), dtype=torch.int64)
+        image = F.to_tensor(image)
+        print(type(image))
+        print(target)
+        #target = torch.as_tensor(np.array(target), dtype=torch.int64)
         return image, target
 
 

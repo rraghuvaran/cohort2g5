@@ -1,9 +1,12 @@
 import os
+import re
 import numpy as np
 import torch
 import pandas as pd
 from sklearn import preprocessing
 from PIL import Image
+from torch.nn.utils.rnn import pad_sequence
+
 
 
 class Unimib2016FoodDataset(torch.utils.data.Dataset):
@@ -33,6 +36,7 @@ class Unimib2016FoodDataset(torch.utils.data.Dataset):
         labels = []
         areas = []
         image_base_name = image_name.rsplit('.', maxsplit=1)[0]
+        image_base_name = re.match(r'([0-9_]*)(\(0\))?',image_base_name).group(1)
         image_item_df = self.annotations_df.loc[self.annotations_df['image_name'] == image_base_name]
         num_objs = image_item_df.shape[1] 
         print(f"Image {image_name} has {num_objs}")
@@ -63,13 +67,26 @@ class Unimib2016FoodDataset(torch.utils.data.Dataset):
         target["boxes"] = boxes
         target["labels"] = labels
         target["image_id"] = image_id
-        target["area"] = area
+        target["areas"] = areas
         target["iscrowd"] = iscrowd
 
-        print(f"Img: {img} Target: {target}")
+        # Preprocessing
+        #target = {
+        #    key: value.numpy() for key, value in target.items()
+        #}  # all tensors should be converted to np.ndarrays
 
         if self.transforms is not None:
             img, target = self.transforms(img, target)
+
+        # Typecasting
+        #img = torch.from_numpy(img).type(torch.float32)
+        #target = {
+        #    key: torch.from_numpy(value).type(torch.int64)
+        #    for key, value in target.items()
+        #}
+        print(f"Img: {img} {type(img)} Target: {target}")
+        #target["boxes"] = pad_sequence(target["boxes"], batch_first=True, padding_value=-1)
+        #target["labels"] = pad_sequence(target["labels"], batch_first=True, padding_value=-1)
 
         return img, target
 
