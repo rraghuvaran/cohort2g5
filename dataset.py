@@ -4,6 +4,7 @@ import numpy as np
 import torch
 import pandas as pd
 from sklearn import preprocessing
+from skimage.draw import polygon
 from PIL import Image
 from torch.nn.utils.rnn import pad_sequence
 
@@ -31,10 +32,15 @@ class Unimib2016FoodDataset(torch.utils.data.Dataset):
         image_name = self.imgs[idx]
         img_path = os.path.join(self.imgdir_path, self.imgs[idx])
         img = Image.open(img_path).convert("RGB")
+        print(type(img))
+        height = img.height
+        width = img.width
+        print(height,width)
 
         boxes = []
         labels = []
         areas = []
+        masks = []
         image_base_name = image_name.rsplit('.', maxsplit=1)[0]
         image_base_name = re.match(r'([0-9_]*)(\(0\))?',image_base_name).group(1)
         image_item_df = self.annotations_df.loc[self.annotations_df['image_name'] == image_base_name]
@@ -54,10 +60,22 @@ class Unimib2016FoodDataset(torch.utils.data.Dataset):
             labels.append(row.item_label_id)
             areas.append(area)
 
+            px_list_str = row.boundary_points
+            px_array = np.array(px_list_str.strip('][').split(', ')).reshape((-1,2)).T.astype(int)
+            print(px_array)
+            mask_img = np.zeros((width, height), dtype=np.uint8)
+            r = px_array[0]
+            c = px_array[1]
+            rr, cc = polygon(r, c)
+            print(type(mask_img))
+            mask_img[rr, cc] = 1
+            masks.append(mask_img)
+
         # convert everything into a torch.Tensor
         boxes = torch.as_tensor(boxes, dtype=torch.float32)
         labels = torch.as_tensor(labels, dtype=torch.int64)
         areas = torch.as_tensor(areas, dtype=torch.int64)
+        masks = torch.as_tensor(np.asarray(masks), dtype=torch.uint8)
 
         image_id = torch.tensor([idx])
         # suppose all instances are not crowd
@@ -69,6 +87,7 @@ class Unimib2016FoodDataset(torch.utils.data.Dataset):
         target["image_id"] = image_id
         target["areas"] = areas
         target["iscrowd"] = iscrowd
+        target["masks"] = masks
 
         # Preprocessing
         #target = {
@@ -98,6 +117,6 @@ if __name__ == '__main__':
     # sanity check of the Dataset pipeline with sample visualization
     dataset = Unimib2016FoodDataset('./data', 'train', None)
     print(f"Number of training images: {len(dataset)}")
-    for i in range(10):
+    for i in range(1):
         s, t = dataset[i]
         print(s, t)
