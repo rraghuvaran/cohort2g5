@@ -63,9 +63,9 @@ class Unimib2016FoodDataset(torch.utils.data.Dataset):
             px_list_str = row.boundary_points
             px_array = np.array(px_list_str.strip('][').split(', ')).reshape((-1,2)).T.astype(int)
             print(px_array)
-            mask_img = np.zeros((width, height), dtype=np.uint8)
-            r = px_array[0]
-            c = px_array[1]
+            mask_img = np.zeros((height, width), dtype=np.uint8)
+            c = px_array[0]
+            r = px_array[1]
             rr, cc = polygon(r, c)
             print(type(mask_img))
             mask_img[rr, cc] = 1
