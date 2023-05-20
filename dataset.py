@@ -19,7 +19,7 @@ class Unimib2016FoodDataset(torch.utils.data.Dataset):
         # load all image files, sorting them to
         # ensure that they are aligned
         self.imgs = list(sorted(os.listdir(os.path.join(root,  subdir, 'original'))))
-        print(self.imgs)
+        #print(self.imgs)
         self.annotations_df = pd.read_csv(os.path.join(self.root, 'annotations.csv'))
         item_name_le = preprocessing.LabelEncoder()
         self.annotations_df['item_label_id'] = item_name_le.fit_transform(self.annotations_df['item_name'])
@@ -32,10 +32,9 @@ class Unimib2016FoodDataset(torch.utils.data.Dataset):
         image_name = self.imgs[idx]
         img_path = os.path.join(self.imgdir_path, self.imgs[idx])
         img = Image.open(img_path).convert("RGB")
-        print(type(img))
         height = img.height
         width = img.width
-        print(height,width)
+        #print(height,width)
 
         boxes = []
         labels = []
@@ -45,7 +44,7 @@ class Unimib2016FoodDataset(torch.utils.data.Dataset):
         image_base_name = re.match(r'([0-9_]*)(\(0\))?',image_base_name).group(1)
         image_item_df = self.annotations_df.loc[self.annotations_df['image_name'] == image_base_name]
         num_objs = image_item_df.shape[1] 
-        print(f"Image {image_name} has {num_objs}")
+        #print(f"Image {image_name} has {num_objs}")
         for row_index, row in image_item_df.iterrows():
             #print(f"{image_name}-{row_index}-{row.item_name}")
             # get bounding box coordinates for each object 
@@ -62,12 +61,12 @@ class Unimib2016FoodDataset(torch.utils.data.Dataset):
 
             px_list_str = row.boundary_points
             px_array = np.array(px_list_str.strip('][').split(', ')).reshape((-1,2)).T.astype(int)
-            print(px_array)
+            #print(px_array)
             mask_img = np.zeros((height, width), dtype=np.uint8)
             c = px_array[0]
             r = px_array[1]
             rr, cc = polygon(r, c)
-            print(type(mask_img))
+            #print(type(mask_img))
             mask_img[rr, cc] = 1
             masks.append(mask_img)
 
@@ -89,23 +88,10 @@ class Unimib2016FoodDataset(torch.utils.data.Dataset):
         target["iscrowd"] = iscrowd
         target["masks"] = masks
 
-        # Preprocessing
-        #target = {
-        #    key: value.numpy() for key, value in target.items()
-        #}  # all tensors should be converted to np.ndarrays
-
         if self.transforms is not None:
             img, target = self.transforms(img, target)
 
-        # Typecasting
-        #img = torch.from_numpy(img).type(torch.float32)
-        #target = {
-        #    key: torch.from_numpy(value).type(torch.int64)
-        #    for key, value in target.items()
-        #}
         print(f"Img: {img} {type(img)} Target: {target}")
-        #target["boxes"] = pad_sequence(target["boxes"], batch_first=True, padding_value=-1)
-        #target["labels"] = pad_sequence(target["labels"], batch_first=True, padding_value=-1)
 
         return img, target
 
@@ -117,6 +103,6 @@ if __name__ == '__main__':
     # sanity check of the Dataset pipeline with sample visualization
     dataset = Unimib2016FoodDataset('./data', 'train', None)
     print(f"Number of training images: {len(dataset)}")
-    for i in range(1):
+    for i in range(10):
         s, t = dataset[i]
         print(s, t)

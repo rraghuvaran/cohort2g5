@@ -58,10 +58,9 @@ def collate_batch(batch):
   for (_img,_target) in batch:
     img_list.append(_img)
     target_list.append(_target)
-  print(type(target_list))
-  target_list = pad_sequence(target_list, batch_first=True, padding_value=0)
+  #target_list = pad_sequence(target_list, batch_first=True, padding_value=0)
 
-  return img_list.to(device),target_list.to(device),
+  return img_list, target_list
 
 # Create iterators for the Data loaded using DataLoader module
 train_data = DataLoader(data['train'], batch_size=bs, shuffle=True, collate_fn=collate_batch)
@@ -71,7 +70,7 @@ test_data = DataLoader(data['test'], batch_size=bs, shuffle=True, collate_fn=col
 print(train_data_size, validation_data_size, test_data_size)
 
 examples = next(iter(train_data))
-for label, img  in enumerate(examples):
+for index, sample in enumerate(examples):
    plt.imshow(img.permute(1,2,0))
    plt.show()
-   print(f"Label: {label}")
+   print(f"Traget: {label}")
