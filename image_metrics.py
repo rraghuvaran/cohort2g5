@@ -1,4 +1,4 @@
-from objdetecteval.metrics.iou import iou
+import iou
 import pandas as pd
 from typing import List
 
