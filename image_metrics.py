@@ -66,10 +66,10 @@ def match_preds_to_targets(predictions_df, labels_df):
         # [label, label]
         # [score, score]
         pred_bbox = preds[['xmin', 'ymin', 'xmax', 'ymax']]
-        if isinstance(bbox, pd.Series):
+        if isinstance(pred_bbox, pd.Series):
             pred_image_bboxes = bbox.values.tolist()
         else:
-            pred_image_bboxed = [ bbox ]
+            pred_image_bboxed = [ pred_bbox ]
         if isinstance(preds['label'], pd.Series):
             pred_image_class_labels = preds['label'].values.tolist()
         else :
