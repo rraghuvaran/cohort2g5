@@ -66,10 +66,11 @@ def match_preds_to_targets(predictions_df, labels_df):
         # [label, label]
         # [score, score]
         pred_bbox = preds[['xmin', 'ymin', 'xmax', 'ymax']]
-        if isinstance(pred_bbox, pd.Series):
-            pred_image_bboxes = bbox.values.tolist()
+        #print(type(pred_bbox))
+        if isinstance(pred_bbox, pd.DataFrame):
+            pred_image_bboxes = pred_bbox.values.tolist()
         else:
-            pred_image_bboxed = [ pred_bbox ]
+            pred_image_bboxes = [ pred_bbox.values.tolist() ]
         if isinstance(preds['label'], pd.Series):
             pred_image_class_labels = preds['label'].values.tolist()
         else :
@@ -89,10 +90,13 @@ def match_preds_to_targets(predictions_df, labels_df):
         # create lists of the label bboxes and classes
 
         label_bbox = labels[['xmin', 'ymin', 'xmax', 'ymax']]
-        if isinstance(label_bbox, pd.Series):
+        #print(label_bbox, type(label_bbox))
+        if isinstance(label_bbox, pd.DataFrame):
             labels_image_bboxes = label_bbox.values.tolist() 
+            #print("**", labels_image_bboxes)
         else :
-            labels_image_bboxes = [ label_bbox ]
+            labels_image_bboxes = [ label_bbox.values.tolist() ]
+            #print("-__", labels_image_bboxes)
         if isinstance(labels['label'], pd.Series) :
             labels_image_class_labels = labels['label'].values.tolist()
         else :
@@ -102,6 +106,7 @@ def match_preds_to_targets(predictions_df, labels_df):
         # add the label lists for the image
         target_class_labels.append(labels_image_class_labels)
         target_bboxes.append(labels_image_bboxes)
+        #print(target_bboxes)
 
     return {
         "image_ids": image_names,
@@ -116,9 +121,11 @@ def match_preds_to_targets(predictions_df, labels_df):
 
 def calc_iou(pred_bbox, true_bboxes):
     iou_val = 0.0
+    print("calc_iou_pred", pred_bbox)
+    print("calc_iou_true", true_bboxes)
     for true_bbox in true_bboxes:
         # assumes pascal
-        box_iou_val = iou(pred_bbox, true_bbox)
+        box_iou_val = iou.iou(pred_bbox, true_bbox)
         if box_iou_val > iou_val:
             iou_val = box_iou_val
     return iou_val
@@ -134,6 +141,7 @@ def calculate_detections(
     do_iou_calc=True,
 ):
     assert len(all_image_ids) == len(all_pred_bboxes) == len(all_true_bboxes)
+    #print(all_pred_bboxes)
 
     # ["image_id", "class", "TP", "TN", "FP", "FN", "Confidence", "IoU"]
     detections = []

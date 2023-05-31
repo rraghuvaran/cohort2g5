@@ -2,6 +2,7 @@ import numpy as np
 
 
 def boxes_intersect(box_a, box_b):
+    #print(box_a, box_b)
     if box_a[0] > box_b[2]:
         return False  # boxA is right of boxB
     if box_b[0] > box_a[2]:
@@ -38,6 +39,7 @@ def get_union_areas(box_a, box_b, interArea=None):
 
 def iou(box_a, box_b):
     # if boxes dont intersect
+    #print(box_a, box_b)
     if boxes_intersect(box_a, box_b) is False:
         return 0
     inter_area = get_intersection_area(box_a, box_b)
